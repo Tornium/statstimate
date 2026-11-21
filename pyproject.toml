@@ -1,0 +1,71 @@
+[build-system]
+requires = ["hatchling >= 1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "statstimate"
+dynamic = ["version"]
+description = "Stat estimation for Torn City"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = [ "LICENSE.md" ]
+authors = [{ name = "tiksan" }]
+requires-python = ">=3.10"
+keywords = ["torn", "torn-city"]
+classifiers = [
+	"Development Status :: 3 - Alpha",
+	"Intended Audience :: Developers",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3 :: Only",
+	"Topic :: Games/Entertainment"
+]
+dependencies = [
+	# We don't want to include xgboost here as the CPU and GPU versions may conflict if
+	# instalaled concurrently.
+	"numpy >= 1.26"
+]
+
+[project.optional-dependencies]
+cpu = [
+    "xgboost-cpu>=3.2; sys_platform != 'darwin'",
+    "xgboost>=3.2; sys_platform == 'darwin'",
+]
+gpu = [
+    "xgboost>=3.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/Tornium/statstimate"
+Source = "https://github.com/Tornium/statstimate"
+Issues = "https://github.com/Tornium/statstimate/issues"
+Changelog = "https://github.com/Tornium/statstimate/blob/master/CHANGELOG.md"
+
+[dependency-groups]
+dev = [
+    "pytest >= 9",
+    "pytest-sugar >= 1.1",
+    "black >= 26",
+    "isort >= 9"
+]
+
+[tool.hatch.version]
+path = "src/statstimate/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/statstimate"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"models/2026-11-13" = "statstimate/models"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
