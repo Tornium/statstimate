@@ -58,7 +58,7 @@ packages = ["src/statstimate"]
 "models/2026-11-13" = "statstimate/models"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/", "tests", "README.md", "LICENSE.md"]
+include = ["src/", "tests/", "models/2026-11-13/", "README.md", "LICENSE.md", "CHANGELOG.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
