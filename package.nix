@@ -9,7 +9,7 @@
 
 let
   # Read the version from src/statstimate/__init__.py so it never drifts from PyPI.
-  initFile = builtins.readFile ../src/statstimate/__init__.py;
+  initFile = builtins.readFile ./src/statstimate/__init__.py;
   versionLine = lib.findFirst (lib.hasPrefix "__version__") null (lib.splitString "\n" initFile);
   version = builtins.elemAt (lib.splitString "\"" versionLine) 1;
 in
@@ -18,7 +18,7 @@ buildPythonPackage {
   inherit version;
   pyproject = true;
 
-  src = lib.cleanSource ../.;
+  src = lib.cleanSource ./.;
 
   build-system = [ hatchling ];
 
