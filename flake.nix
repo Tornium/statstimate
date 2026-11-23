@@ -18,19 +18,19 @@
       # Adds `statstimate` to every Python package set (python3Packages, python312Packages, ...).
       overlays.default = final: prev: {
         pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-          (pyFinal: pyPrev: { statstimate = pyFinal.callPackage ./nix/package.nix { }; })
+          (pyFinal: pyPrev: { statstimate = pyFinal.callPackage ./package.nix { }; })
         ];
       };
 
       packages = forAllSystems (pkgs: rec {
-        statstimate = pkgs.python3Packages.callPackage ./nix/package.nix { };
+        statstimate = pkgs.python3Packages.callPackage ./package.nix { };
         default = statstimate;
       });
 
       checks = forAllSystems (
         pkgs:
         let
-          python = pkgs.python3.withPackages (ps: [ (ps.callPackage ./nix/package.nix { }) ]);
+          python = pkgs.python3.withPackages (ps: [ (ps.callPackage ./package.nix { }) ]);
         in
         {
           package = self.packages.${pkgs.stdenv.hostPlatform.system}.statstimate;
