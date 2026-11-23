@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: # manual run -> TestPyPI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true # caches hatchling / xgboost-cpu downloads, not build output
+
+      - name: Check tag matches __version__
+        if: github.event_name == 'push'
+        run: |
+          version=$(grep -Po '^__version__ = "\K[^"]+' src/statstimate/__init__.py)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match __version__ $version" >&2
+            exit 1
+          fi
+
+      # Builds the sdist, then the wheel *from* the sdist, so a missing file in the
+      # sdist (e.g. the model files) fails here instead of on users' machines.
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Smoke-test the built wheel
+        run: |
+          uv venv /tmp/smoke
+          uv pip install --python /tmp/smoke "$(ls dist/*.whl)[cpu]"
+          /tmp/smoke/bin/python -c "import statstimate; statstimate.Estimator(); print(statstimate.__version__)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event_name == 'workflow_dispatch' && 'testpypi' || 'pypi' }}
+      url: ${{ github.event_name == 'workflow_dispatch'
+        && 'https://test.pypi.org/p/statstimate'
+        || 'https://pypi.org/p/statstimate' }}
+    permissions:
+      id-token: write # required for trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ github.event_name == 'workflow_dispatch'
+            && 'https://test.pypi.org/legacy/'
+            || 'https://upload.pypi.org/legacy/' }}
+          # TestPyPI refuses re-uploads of a version; don't fail repeat test runs.
+          skip-existing: ${{ github.event_name == 'workflow_dispatch' }}
