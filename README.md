@@ -101,7 +101,7 @@ Each estimate is an `EstimatedStats`:
 ### Options
 ```python
 Estimator(
-    model_path=None,  # folder with the model files; see "Model files" below
+    model_path=None,  # directory with the model files
     device=None,      # XGBoost device, e.g. "cpu" or "cuda"; None keeps XGBoost's default (CPU)
     threads=None,     # threads per prediction; None uses all cores
 )
